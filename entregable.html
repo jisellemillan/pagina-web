@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pilas y Colas</title>
+  <style>/* inicia el bloque de estilos CSS para la pagina */
+
+    @font-face { /* define una fuente personalizada para ser usada en la pagina */
+      font-family: "PressStart2P"; /* le da un nombre a la fuente para poder referenciarla */
+      src: url("https://fonts.cdnfonts.com/s/14012/PressStart2P-Regular.woff") format("woff");/* especifica la URL de donde se cargara la fuente */
+    }
+
+    body { /* Aplica estilos al cuerpo completo de la pagina */
+      font-family: "PressStart2P", monospace;/* Establece la fuente principal del texto */
+      color: #fff;/* Define el color del texto como blanco */
+      text-align: center;/* Centra todo el texto horizontalmente */
+      margin: 0; /* Elimina el margen exterior por defecto */
+      padding: 20px;/* Añade un espacio de 20 pixeles dentro del cuerpo */
+      image-rendering: pixelated;/* Evita que las imagenes pixel art se vean borrosas al escalar */
+      background:/* Define un fondo complejo con multiples capas */
+        repeating-linear-gradient(rgba(0,0,0,0.3) 0, rgba(0,0,0,0.3) 2px, transparent 2px, transparent 4px),/* Capa 1: Efecto de liineas de TV antiguas (scanlines) */
+        url('fondo.png') repeat,/* Capa 2: Imagen de fondo que se repite */
+        #1F1A38;/* Capa 3: Color de fondo solido si la imagen falla */
+      background-attachment: fixed; /* Fija el fondo para que no se mueva al hacer scroll  */
+    }
+
+    /*  Estilos para la Pantalla de inicio  */
+    #inicio {  /* Selecciona el div con el id "inicio" */
+      position: fixed; inset: 0; background-color: #4B5BAB; /* Lo fija para que ocupe toda la pantalla */
+      display: flex; flex-direction: column; align-items: center; justify-content: center; /* Usa Flexbox para centrar su contenido perfectamente */
+      z-index: 10; /* para que este por encima de todo lo demas */
+    }
+    #inicio img.titulo { width: 50vw; max-width: 700px; height: auto; margin-bottom: 40px; } /* Estilos para la imagen del titulo en la pantalla de inicio */
+    #startButton { width: 200px; height: auto; cursor: pointer; transition: transform 0.2s; filter: drop-shadow(4px 4px #394759); }/* Estilos para el boton de swtart */
+    #startButton:hover { transform: scale(1.1); filter: brightness(1.3) drop-shadow(4px 4px #394759); } /* Efecto al pasar el mouse sobre el boton start */
+
+    /*Estilos para el Contenido principal */
+    #main { display: none; }  /* Oculta el contenido principal por defecto */
+    .game-container {/* Estilos para el contenedor que agrupa las secciones de Pila y Cola */
+        display: flex;/* Usa Flexbox para alinear sus hijos */
+        justify-content: center;/* Centra las secciones horizontalmente */
+        align-items: flex-start;/* Alinea las secciones por la parte de arriba para que no se muevan */
+        flex-wrap: wrap;/* Permite que las secciones pasen a la siguiente linea si no hay espacio */
+        gap: 40px;/* Añade un espacio de 40px entre las secciones */
+    }
+
+h1 { font-size: 24px; color: #FFCC00; text-shadow: 3px 3px #D95763; background: #394759; padding: 10px 20px; border: 4px solid #1F1A38; display: inline-block; margin-bottom: 40px; }/* Estilos para el titulo principal "SIMULADOR..." */
+h2 { color: #FFCC00; text-shadow: 2px 2px #1F1A38; } /* Estilos para los titulos "PILA (STACK)" y "COLA (QUEUE)" si fueran texto */
+
+    
+.section { /* Estilos para cada una de las cajas principales (Pila y Cola) */
+  display: inline-block; /* Comportamiento de bloque pero que fluye con el texto */
+  margin: 20px;/* Margen exterior de 20px */
+  padding: 20px; /* espacio interior */
+  image-rendering: pixelated;/* Mantiene el estilo pixelado en las imagenes de fondo */
+  background-size: 100% 100%; /* La imagen de fondo se estira para cubrir todo el contenedor */
+  background-repeat: no-repeat;/* La imagen de fondo no se repite */
+  background-position: center;/* Centra la imagen de fondo */
+  display: flex;/* Usa Flexbox para ordenar el contenido interno */
+  flex-direction: column; /* Apila los elementos verticalmente */
+  align-items: center;   /* Centra todo horizontalmente */
+  gap: 10px;               /* Añade un pequeño espacio entre los elementos */}
+
+  .section-stack {/* Estilos especificos para la seccion de la Pila */
+  background-image: url('caja-pila.png'); /* Ruta a la imagen de la caja de la pila */
+  width: 250px; /* Ajusta el ancho de la imagen */
+  height: 500px; /* Ajusta el alto dela imagen */}
+
+  .section-title-img { /* Estilos para las imagenes de titulo "PILA" y "COLA" */
+  width: 180px; /* Ancho de laimagen de titulo */
+  height: auto; /* El alto se ajusta automaticamente para mantener la proporcion */
+  image-rendering: pixelated; /* Para que se vea bien el pixel art,çmantiene el look pixelado */
+  margin-top: 15px; /* Añade un espacio superior para separarlo del borde */
+  margin-bottom: 15px; /* Añade un espacio inferior entre botones cajas y asi */
+  filter: drop-shadow(2px 2px #1F1A38); /* Anade una sombra de estilo pixelado */}
+
+  .section-queue {/* Estilos especificos para la seccion de la Cola */
+  background-image: url('caja-cola.png'); /* Ruta a la imagen de la caja de la cola */
+  width: 450px; /* Ajusta el ancho de la imagen */
+  height: 300px; /* Ajusta el alto de al imagen */}
+    
+  .container, .queue-container { /* Estilos comunes para las areas donde se muestran los elementos */
+      display: flex; align-items: center; justify-content: center; /* Usa Flexbox para centrar los items o elementos que agregamps amarillos */
+      background: #394759; border: 3px solid #1F1A38; padding: 10px; margin-top: 20px; /* Estilos visuales de la caja */}
+
+    
+      .container { /* Estilos especificos para el contenedor de la Pila */
+      flex-direction: column-reverse;/* Apila los elementos verticalmente y en orden inverso (simula una pila) */
+      width: 150px;/* Ancho del area de elementos */
+      height: 200px; /* Alto fijo del area */
+      overflow-y: auto;/* Añade una barra de scroll vertical si los elementos no caben */}
+
+    .queue-container {/* Estilos especificos para el contenedor de la Cola */
+      flex-direction: row;/* Coloca los elementos uno al lado del otro (simula una cola) */
+      flex-wrap: wrap; /* Permite que los elementos salten a la siguiente línea si no caben */
+      align-content: flex-start; /* Alinea las lineas de elementos en la parte superior */
+      width: 300px;
+      height: 100px;
+      overflow-y: auto; }/* Añade una barra de scroll vertical si los elementos no caben */
+
+    .item {/* Estilos para cada elemento amarillo que se añade */
+      background: #FFCC00; color: #000; font-size: 12px;/* Colores y tamaño de fuente */
+      padding: 10px; border: 3px solid #394759; margin: 5px;/* Espaciado y borde */
+      box-shadow: 2px 2px #394759;/* Sombra del elemento */
+    }
+
+    input {/* Estilos para los campos de texto donde se escribe el elemento */
+      background: #394759; color: #fff; border: 4px solid #1F1A38; padding: 8px;/* Colores, borde y espaciado */
+      font-family: "PressStart2P"; font-size: 10px; width: 100px; text-align: center;/* Estilos de texto y tamaño */
+      margin: 5px; outline: none;/* el margen y eliminacion del borde de seleccion */
+    }
+    input:focus { background: #5968C1; color: #FFCC00; }/* Estilo que se aplica cuando se hace clic en el campo de texto */
+
+    .btn {/* Estilos para los botones de imagen (Push, Pop, Enqueue, Dequeue) */
+      width: 90px; height: auto; cursor: pointer; transition: transform 0.2s;/* Tamaño, cursor y transicion suave */
+      filter: drop-shadow(3px 3px #394759); margin: 5px; vertical-align: middle; /* Sombra, margen y alineacion vertical */
+    }
+    .btn:hover { transform: scale(1.1); filter: brightness(1.3) drop-shadow(3px 3px #394759); }/* Efecto al pasar el mouse sobre los botones */
+ 
+ 
+    /*              animaciones   */
+    @keyframes pop-in { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } } /* Define una animacion de aparecer */
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); } 40%, 80% { transform: translateX(5px); } }/* Define una animacion de sacudida para errores */
+    .item-add { animation: pop-in 0.3s ease-out; }/* Clase que aplica la animacion pop-in */
+    .container-error, .queue-container-error { animation: shake 0.5s; }/* Clase que aplica la animacion de sacudida */
+  /* termina el css */</style> 
+</head>
+<body>
+  <div id="inicio">
+    <img src="titulo.png" class="titulo" alt="Titulo del proyecto">
+    <img src="start.png" alt="Start" id="startButton">
+    <audio id="startSound" src="start-sound.mp3" preload="auto"></audio>
+  </div>
+
+  <div id="main">
+    <img src="titulo2.png" class="titulo" alt="Titulo">
+    <div class="game-container">
+      <div class="section section-stack">
+        <img src="titulo-pila.png" class="section-title-img" alt="Pila (Stack)">
+        <input type="text" id="stackInput" placeholder="Elemento">
+        <img src="push.png" class="btn" alt="Push" onclick="pushStack()">
+        <img src="pop.png" class="btn" alt="Pop" onclick="popStack()">
+        <div class="container" id="stackContainer"></div>
+      </div>
+      <div class="section section-queue">
+  <img src="titulo-cola.png" class="section-title-img" alt="Cola (Queue)">
+
+  <div class="controls-container">
+    <input type="text" id="queueInput" placeholder="Elemento">
+    <img src="enqueue.png" class="btn" alt="ENQUEUE" onclick="enqueue()">
+    <img src="dequeue.png" class="btn" alt="DEQUEUE" onclick="dequeue()">
+  </div>
+  <div class="queue-container" id="queueContainer"></div>
+</div>
+    </div>
+    <audio id="pushSound" src="push.wav" preload="auto"></audio>
+    <audio id="popSound" src="pop.wav" preload="auto"></audio>
+  </div>
+
+  <script>
+
+
+/* Inicia el bloque de codigo en javaScript */
+//        Logica de la PANTALLA DE INICIO 
+
+    const startButton = document.getElementById('startButton');// Obtiene la referencia al boton de start
+    const startSound = document.getElementById('startSound');// Obtiene la referencia al sonido de inicio
+    const inicio = document.getElementById('inicio');// Obtiene la referencia a la pantalla de inicio
+    const main = document.getElementById('main');// Obtiene la referencia al contenido principal
+    startButton.addEventListener('click', () => { startSound.play(); inicio.style.display = 'none'; main.style.display = 'block'; });// Cuando se hace clic en start, reproduce el sonido, oculta la pantalla de inicio y muestra el contenido principal
+    
+    //            Referencias a los SONIDOS 
+    const pushSound = document.getElementById('pushSound');// Obtiene la referencia al sonido de añadir
+    const popSound = document.getElementById('popSound'); // Obtiene la referencia al sonido de quitar
+    
+    //         Logica de la PILA
+    const stackContainer = document.getElementById('stackContainer'); // Obtiene la referencia al contenedor visual de la Pila
+    const stack = [];// Crea un array lista vacio que funcionara como nuestra pila
+    
+    function pushStack() {// Funcion para añadir un elemento a la pila
+      const value = document.getElementById('stackInput').value; if (!value) return; // Obtiene el texto del input; si esta vacio, no hace nada
+      stack.push(value); pushSound.currentTime = 0; pushSound.play(); // Añade el valor al final del array de la pila y reproduce el sonido
+      renderStack(true); document.getElementById('stackInput').value = ''; // Vuelve a dibujar la pila  y limpia el campo de texto
+      }
+    
+    function popStack() { // Funcion para quitar un elemento de la pila
+      if (stack.length === 0) { // Comprueba si la pila esta vacia
+        stackContainer.classList.add('container-error');// Si esta vacia, añade la clase para la animacion de sacudida
+        setTimeout(() => stackContainer.classList.remove('container-error'), 500); // Quita la clase de animacion despues de 0.5 segundos
+        return alert("La pila esta vacia");// Muestra una alerta y detiene la funcion
+      }
+      stack.pop(); popSound.currentTime = 0; popSound.play();// Quita el ultimo elemento del array de la pila y reproduce el sonido
+      renderStack(false);// Vuelve a dibujar la pila sin animacion de nuevo elemento
+    }
+    function renderStack(isNew) { // Funcion para dibujar o actualizar la pila en la pantalla
+      stackContainer.innerHTML = ''; // Borra todo el contenido actual del contenedor de la pila
+      stack.forEach((item, index) => { // Recorre cada elemento en el array de la pila
+        const div = document.createElement('div'); div.className = 'item'; // Crea un nuevo div y le asigna la clase item
+        if (isNew && index === stack.length - 1) { div.classList.add('item-add'); }// Si es un elemento nuevo, le añade la clase para la animación de aparecer
+        div.textContent = item; stackContainer.appendChild(div);// pone el texto en el div y lo añade al contenedor de la pila
+      });
+    }
+ //  Logica de la COLA
+    const queueContainer = document.getElementById('queueContainer'); // Obtiene la referencia al contenedor visual de la cola
+    const queue = []; // Crea un array vacio que funcionara como nuestra cola
+
+    function enqueue() {// Funcion para añadir un elemento a la cola
+      const value = document.getElementById('queueInput').value; if (!value) return;// Obtiene el texto del input; si estavacio, no hace nada
+      queue.push(value); pushSound.currentTime = 0; pushSound.play();// Añade el valor al final del array de la cola y reproduce el sonido
+      renderQueue(true); document.getElementById('queueInput').value = '';// Vuelve a dibujar la cola  y limpia el campo de texto
+    }
+    function dequeue() { // Funcion para quitar un elemento de la cola
+      if (queue.length === 0) {// Comprueba si la Cola esta vacia
+        queueContainer.classList.add('queue-container-error');// Si esta vacia, añade la clase para la animación de sacudida
+        setTimeout(() => queueContainer.classList.remove('queue-container-error'), 500);// Quita la clase de animacion despues de 0.5 segundos
+        return alert("La cola esta vacia"); // Muestra una alerta y detiene la funcion
+      }
+      queue.shift(); popSound.currentTime = 0; popSound.play(); // Quita el primer elemento del array de la cola y reproduce el sonido
+      renderQueue(false); // Vuelve a dibujar la cola 
+    }
+    function renderQueue(isNew) {// Funcion para dibujar o actualizar la cola en la pantalla
+      queueContainer.innerHTML = '';// Borra todo el contenido actual del contenedor de la cola
+      queue.forEach((item, index) => {// Recorre cada elemento en el array de la cola
+        const div = document.createElement('div'); div.className = 'item';// Crea un nuevo div y le asigna la clase item
+        if (isNew && index === queue.length - 1) { div.classList.add('item-add'); }// Si es un elemento nuevo, le añade la clase para la animacion de "aparecer"
+        div.textContent = item; queueContainer.appendChild(div);// Pone el texto en el div y lo añade al contenedor de la cola
+      });
+    }
+  </script>
+</body>
+</html>
